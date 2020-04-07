@@ -17,7 +17,7 @@ public:
     virtual void close() = 0;
     virtual bool isOpen() = 0;
 
-    virtual void write(const std::vector<uint8_t>& vector) = 0;
+    //virtual void write(const std::vector<uint8_t>& vector) = 0;
 
     boost::signals2::connection
     doOnReceived(std::function<void(std::vector<uint8_t>)> slot)

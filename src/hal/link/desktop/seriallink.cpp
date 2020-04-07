@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -11,7 +12,8 @@ SerialLink::SerialLink(const std::string& port, uint32_t baudrate)
     , _ioContext()
     , _runContext(true)
     , _serialPort(_ioContext)
-    , _rxBuffer(4096)
+    , _rxBuffer()
+    , _linkBuffer()
 {
     try {
         _serialPort.open(port);
@@ -54,6 +56,14 @@ SerialLink::SerialLink(const std::string& port, uint32_t baudrate)
     _serialPort.write_some(boost::asio::buffer("UUUUUUUUUU"));
 }
 
+SerialLink::~SerialLink()
+{
+    close();
+    _runContext = false;
+    _futureContent.wait();
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+}
+
 void SerialLink::bindRead()
 {
     _serialPort.async_read_some(
@@ -80,16 +90,55 @@ void SerialLink::doRead(boost::system::error_code error, size_t bytesReceived)
             std::advance(lastIterator, bytesReceived);
             std::vector<uint8_t> output(_rxBuffer.cbegin(), lastIterator);
             _onReceived(output);
+            mtx.lock();
+            int oldSize = _linkBuffer.size();
+            std::cout << "size old :" << _linkBuffer.size() << std::endl;
+            //_linkBuffer.resize(_linkBuffer.size() + bytesReceived);
+            auto init = _linkBuffer.begin();
+            std::advance(init, oldSize);
+            auto lastIterator2 = _rxBuffer.begin();
+            std::advance(lastIterator2, bytesReceived);
+            _linkBuffer.insert(init, std::begin(_rxBuffer), lastIterator2);
+            std::cout << "size new :" << _linkBuffer.size() << std::endl;
+            std::cout << "READ:";
+            for(int i = 0; i < static_cast<int>(bytesReceived); i++) {
+                printf("|%u [%u]|,", _linkBuffer[i], _rxBuffer[i]);
+            }
+            mtx.unlock();
+            printf("\n");
             bindRead();
         }
     }
 }
 
-void SerialLink::write(const std::vector<uint8_t>& vector)
+int SerialLink::read(uint8_t* buffer, int nBytes)
 {
-    _serialPort.async_write_some(boost::asio::buffer(vector), [](const boost::system::error_code& error, std::size_t /*bytes_transferred*/) {
+    mtx.lock();
+    //std::cout << __PRETTY_FUNCTION__ << " " << nBytes;
+    const int amount = std::min(nBytes, static_cast<int>(_linkBuffer.size()));
+    std::copy_n(std::begin(_linkBuffer), amount, buffer);
+    if(amount) {
+        std::cout << __PRETTY_FUNCTION__ << " " << nBytes << " " << amount << std::endl;
+        printf("SER: ");
+        for(int i = 0; i < amount; i++) {
+            printf("~%u [%u]~,", buffer[i], _linkBuffer[i]);
+        }
+        printf("\n");
+    }
+    auto lastIterator = _linkBuffer.begin();
+    std::advance(lastIterator, amount);
+    _linkBuffer.erase(_linkBuffer.begin(), lastIterator);
+    mtx.unlock();
+    return amount;
+}
+
+int SerialLink::write(const uint8_t* data, int nBytes)
+{
+    _serialPort.async_write_some(boost::asio::buffer(data, nBytes), [](const boost::system::error_code& error, std::size_t /*bytes_transferred*/) {
         if (error) {
             std::cout << "Error while writing in serial port: " << error.message() << std::endl;
         }
     });
+
+    return nBytes;
 }

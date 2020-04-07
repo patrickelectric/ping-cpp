@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 #include <memory>
 #include <string>
 
@@ -14,21 +15,14 @@
 class SerialLink : public AbstractLink {
 public:
     SerialLink(const std::string& port, uint32_t baudrate);
-    ~SerialLink()
-    {
-        close();
-        _runContext = false;
-        _futureContent.wait();
-        _rxBuffer.clear();
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
-    };
+    ~SerialLink();
 
     virtual void close() override final { _serialPort.close(); };
     virtual bool isOpen() override final { return _serialPort.is_open(); };
-    void write(const std::vector<uint8_t>& vector) override final;
+    //void write(const std::vector<uint8_t>& vector) override final;
 
-    virtual int read(char* /*buffer*/, int /*nBytes*/) override final { return 0; };
-    virtual int write(const char* /*data*/, int /*nBytes*/) override final { return 0; };
+    virtual int read(uint8_t* buffer, int nBytes) override final;
+    virtual int write(const uint8_t* data, int nBytes) override final;
 
 private:
     SerialLink(const SerialLink&) = delete;
@@ -40,6 +34,10 @@ private:
     boost::asio::io_context _ioContext;
     std::future<void> _futureContent;
     std::atomic<bool> _runContext;
+
     boost::asio::serial_port _serialPort;
-    std::vector<uint8_t> _rxBuffer;
+    std::array<uint8_t, 4096> _rxBuffer;
+    std::vector<uint8_t> _linkBuffer;
+
+    std::mutex mtx;
 };

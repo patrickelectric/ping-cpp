@@ -16,4 +16,13 @@ PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(HAL)
+
+find_package(Boost 1.65 COMPONENTS atomic program_options system thread REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
+
+target_link_libraries(
+    HAL
+LINK_PUBLIC
+    ${Boost_LIBRARIES}
+    atomic
+)

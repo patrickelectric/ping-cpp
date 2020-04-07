@@ -21,7 +21,7 @@ PingPortLinux::~PingPortLinux() {
   }
 }
 
-int PingPortLinux::read(char* data, int nBytes) {
+int PingPortLinux::read(uint8_t* data, int nBytes) {
   int result = std::fread(data, 1, nBytes, _handle);
 
   if (result == 0) {
@@ -75,7 +75,7 @@ bool PingPortLinux::setBaudrate(int baudrate) {
   return true;
 }
 
-int PingPortLinux::write(const char* data, int nBytes) {
+int PingPortLinux::write(const uint8_t* data, int nBytes) {
   int bytes = std::fwrite(data, 1, nBytes, _handle);
   std::fflush(_handle);
   return bytes;

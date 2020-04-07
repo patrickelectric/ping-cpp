@@ -5,6 +5,8 @@
 #include <time/ping-time.h>
 #include <link/ping-port.h>
 
+#include <cstdio>
+
 bool PingDevice::initialize()
 {
     return request(CommonId::PROTOCOL_VERSION) && request(CommonId::DEVICE_INFORMATION);
@@ -12,12 +14,10 @@ bool PingDevice::initialize()
 
 ping_message* PingDevice::read()
 {
-    char b;
+    uint8_t b;
     int result = _port.read(&b, 1);
-    if (result > 0) {
-        if (_parser.parseByte(static_cast<char>(b)) == PingParser::NEW_MESSAGE) {
-            return &_parser.rxMessage;
-        }
+    if (result != 0 && _parser.parseByte(b) == PingParser::NEW_MESSAGE) {
+        return &_parser.rxMessage;
     }
     return nullptr;
 }
@@ -61,12 +61,12 @@ ping_message* PingDevice::waitMessage(uint16_t id, int timeoutMs) {
     return nullptr;
 }
 
-int PingDevice::write(const char* data, int nBytes) { return _port.write(data, nBytes); }
+int PingDevice::write(const uint8_t* data, int nBytes) { return _port.write(data, nBytes); }
 
 void PingDevice::writeMessage(ping_message& message)
 {
     message.updateChecksum();
-    write(reinterpret_cast<char*>(message.msgData), message.msgDataLength());
+    write(reinterpret_cast<uint8_t*>(message.msgData), message.msgDataLength());
 }
 
 void PingDevice::_handleMessage(const ping_message* message) {

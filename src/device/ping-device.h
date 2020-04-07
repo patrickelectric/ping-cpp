@@ -82,7 +82,7 @@ public:
      *
      *  @return: size of data buffer written to the device
      */
-    int write(const char* data, int length);
+    int write(const uint8_t* data, int length);
 
     /**
      *  @brief Write a ping_message to the device. Before writing, the ping_messaage is \n

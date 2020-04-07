@@ -32,10 +32,10 @@ public:
         return _socket.is_open();
     };
 
-    virtual void write(const std::vector<uint8_t>& vector) final override;
+    void write(const std::vector<uint8_t>& vector);
 
-    virtual int read(char* /*buffer*/, int /*nBytes*/) override final { return 0; };
-    virtual int write(const char* /*data*/, int /*nBytes*/) override final { return 0; };
+    virtual int read(uint8_t* /*buffer*/, int /*nBytes*/) override final { return 0; };
+    virtual int write(const uint8_t* /*data*/, int /*nBytes*/) override final { return 0; };
 
 private:
     UdpLink(const UdpLink&) = delete;
