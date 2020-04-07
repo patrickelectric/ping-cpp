@@ -9,11 +9,8 @@ using boost::asio::serial_port_base;
 
 SerialLink::SerialLink(const std::string& port, uint32_t baudrate)
     : AbstractLink()
-    , _ioContext()
-    , _runContext(true)
-    , _serialPort(_ioContext)
-    , _rxBuffer()
-    , _linkBuffer()
+    , _context()
+    , _serialPort(_context.eventLoop)
 {
     try {
         _serialPort.open(port);
@@ -36,19 +33,20 @@ SerialLink::SerialLink(const std::string& port, uint32_t baudrate)
         return;
     }
 
-    _ioContext.post(boost::bind(&SerialLink::bindRead, this));
+    _context.eventLoop.post(boost::bind(&SerialLink::bindRead, this));
 
-    _futureContent = std::async(std::launch::async, [this] {
+    _context.run = true;
+    _context.future = std::async(std::launch::async, [this] {
         // Run event loop
-        while (_runContext) {
+        while (_context.run) {
             using namespace std::chrono_literals;
             try {
-                _ioContext.run_for(100ms);
+                _context.eventLoop.run_for(100ms);
             } catch (const std::exception& exception) {
                 std::cerr << "Event loop failed to run: " << exception.what() << std::endl;
             }
         }
-        _ioContext.stop();
+        _context.eventLoop.stop();
     });
 
     _serialPort.send_break();
@@ -59,8 +57,8 @@ SerialLink::SerialLink(const std::string& port, uint32_t baudrate)
 SerialLink::~SerialLink()
 {
     close();
-    _runContext = false;
-    _futureContent.wait();
+    _context.run = false;
+    _context.future.wait();
 }
 
 void SerialLink::bindRead()

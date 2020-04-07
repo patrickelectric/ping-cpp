@@ -31,9 +31,11 @@ private:
     void bindRead();
     void doRead(boost::system::error_code error, size_t bytesReceived);
 
-    boost::asio::io_context _ioContext;
-    std::future<void> _futureContent;
-    std::atomic<bool> _runContext;
+    struct {
+        std::atomic<bool> run;
+        boost::asio::io_context eventLoop;
+        std::future<void> future;
+    } _context;
 
     boost::asio::serial_port _serialPort;
     std::array<uint8_t, 4096> _rxBuffer;
