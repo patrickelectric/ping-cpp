@@ -37,7 +37,9 @@ private:
 
     boost::asio::serial_port _serialPort;
     std::array<uint8_t, 4096> _rxBuffer;
-    std::vector<uint8_t> _linkBuffer;
 
-    std::mutex mtx;
+    struct {
+        std::vector<uint8_t> data;
+        std::mutex mutex;
+    } _linkBuffer;
 };

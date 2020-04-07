@@ -10,11 +10,6 @@
 
 const char* AbstractLink::_urlStringRegex = R"((?P<type>udp|serial):(?P<host>.*):(?P<config>\d+))";
 
-AbstractLink::~AbstractLink()
-{
-    std::cout << __PRETTY_FUNCTION__ << std::endl;
-}
-
 std::shared_ptr<AbstractLink> AbstractLink::openUrl(const std::string& url)
 {
     if (url.empty()) {

@@ -10,7 +10,7 @@
 class AbstractLink : public PingPort {
 public:
     AbstractLink() = default;
-    ~AbstractLink();
+    ~AbstractLink() = default;
 
     static std::shared_ptr<AbstractLink> openUrl(const std::string& url);
 
