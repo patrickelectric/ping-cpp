@@ -74,7 +74,6 @@ void SerialLink::bindRead()
 
 void SerialLink::doRead(boost::system::error_code error, size_t bytesReceived)
 {
-    std::cout << "> " << error << " " << error.value() << " " << bytesReceived << std::endl;
     if (error) {
         if (error.value() == boost::system::errc::operation_canceled) {
             return;
@@ -92,20 +91,12 @@ void SerialLink::doRead(boost::system::error_code error, size_t bytesReceived)
             _onReceived(output);
             mtx.lock();
             int oldSize = _linkBuffer.size();
-            std::cout << "size old :" << _linkBuffer.size() << std::endl;
-            //_linkBuffer.resize(_linkBuffer.size() + bytesReceived);
             auto init = _linkBuffer.begin();
             std::advance(init, oldSize);
             auto lastIterator2 = _rxBuffer.begin();
             std::advance(lastIterator2, bytesReceived);
             _linkBuffer.insert(init, std::begin(_rxBuffer), lastIterator2);
-            std::cout << "size new :" << _linkBuffer.size() << std::endl;
-            std::cout << "READ:";
-            for(int i = 0; i < static_cast<int>(bytesReceived); i++) {
-                printf("|%u [%u]|,", _linkBuffer[i], _rxBuffer[i]);
-            }
             mtx.unlock();
-            printf("\n");
             bindRead();
         }
     }
@@ -117,14 +108,6 @@ int SerialLink::read(uint8_t* buffer, int nBytes)
     //std::cout << __PRETTY_FUNCTION__ << " " << nBytes;
     const int amount = std::min(nBytes, static_cast<int>(_linkBuffer.size()));
     std::copy_n(std::begin(_linkBuffer), amount, buffer);
-    if(amount) {
-        std::cout << __PRETTY_FUNCTION__ << " " << nBytes << " " << amount << std::endl;
-        printf("SER: ");
-        for(int i = 0; i < amount; i++) {
-            printf("~%u [%u]~,", buffer[i], _linkBuffer[i]);
-        }
-        printf("\n");
-    }
     auto lastIterator = _linkBuffer.begin();
     std::advance(lastIterator, amount);
     _linkBuffer.erase(_linkBuffer.begin(), lastIterator);
