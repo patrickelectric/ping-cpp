@@ -1,12 +1,12 @@
 #include <ping-device-ping1d.h>
 #include <ping-message-all.h>
-#include <link/ping-port-linux.h>
+#include <link/desktop/abstractlink.h>
 
 #include <stdio.h>
 
 #define EXENAME "test-device-ping1d"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char**/* argv[]*/) {
     printf(" ~* " EXENAME " *~\n");
 
     if (argc < 2 || argc > 2) {
@@ -15,10 +15,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    const char* portFileName = argv[1];
+    //const char* portFileName = argv[1];
 
-    PingPortLinux port = PingPortLinux(portFileName);
-    Ping1d device  = Ping1d(port);
+    auto port = AbstractLink::openUrl("serial:/dev/ttyUSB0:115200");
+    Ping1d device  = Ping1d(*port.get());
 
     printf("initializing\n");
 
