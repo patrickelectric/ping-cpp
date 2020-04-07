@@ -85,17 +85,11 @@ void SerialLink::doRead(boost::system::error_code error, size_t bytesReceived)
     } else {
         // Redo next async request
         if (bytesReceived) {
-            auto lastIterator = _rxBuffer.cbegin();
-            std::advance(lastIterator, bytesReceived);
-            std::vector<uint8_t> output(_rxBuffer.cbegin(), lastIterator);
+            std::vector<uint8_t> output(std::cbegin(_rxBuffer), std::next(std::cbegin(_rxBuffer), bytesReceived));
             _onReceived(output);
+
             mtx.lock();
-            int oldSize = _linkBuffer.size();
-            auto init = _linkBuffer.begin();
-            std::advance(init, oldSize);
-            auto lastIterator2 = _rxBuffer.begin();
-            std::advance(lastIterator2, bytesReceived);
-            _linkBuffer.insert(init, std::begin(_rxBuffer), lastIterator2);
+            _linkBuffer.insert(std::end(_linkBuffer), std::begin(_rxBuffer), std::next(std::begin(_rxBuffer), bytesReceived));
             mtx.unlock();
             bindRead();
         }
