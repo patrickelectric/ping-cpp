@@ -99,12 +99,9 @@ void SerialLink::doRead(boost::system::error_code error, size_t bytesReceived)
 int SerialLink::read(uint8_t* buffer, int nBytes)
 {
     mtx.lock();
-    //std::cout << __PRETTY_FUNCTION__ << " " << nBytes;
     const int amount = std::min(nBytes, static_cast<int>(_linkBuffer.size()));
     std::copy_n(std::begin(_linkBuffer), amount, buffer);
-    auto lastIterator = _linkBuffer.begin();
-    std::advance(lastIterator, amount);
-    _linkBuffer.erase(_linkBuffer.begin(), lastIterator);
+    _linkBuffer.erase(_linkBuffer.begin(), std::next(_linkBuffer.begin(), amount));
     mtx.unlock();
     return amount;
 }
