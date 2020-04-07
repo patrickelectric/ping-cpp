@@ -34,8 +34,8 @@ public:
 
     void write(const std::vector<uint8_t>& vector);
 
-    virtual int read(uint8_t* /*buffer*/, int /*nBytes*/) override final { return 0; };
-    virtual int write(const uint8_t* /*data*/, int /*nBytes*/) override final { return 0; };
+    virtual int read(uint8_t* buffer, int nBytes) override final;
+    virtual int write(const uint8_t* data, int nBytes) override final;
 
 private:
     UdpLink(const UdpLink&) = delete;
@@ -50,4 +50,9 @@ private:
     boost::asio::ip::udp::socket _socket;
     boost::asio::ip::udp::endpoint _endpoint;
     std::vector<uint8_t> _rxBuffer;
+
+    struct {
+        std::vector<uint8_t> data;
+        std::mutex mutex;
+    } _linkBuffer;
 };

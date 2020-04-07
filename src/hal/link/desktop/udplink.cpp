@@ -60,22 +60,34 @@ void UdpLink::doRead(boost::system::error_code error, size_t bytesReceived)
             _socket.close();
         }
     } else {
-        auto lastIterator = _rxBuffer.cbegin();
-        std::advance(lastIterator, bytesReceived);
-        std::vector<uint8_t> output(_rxBuffer.cbegin(), lastIterator);
+        std::vector<uint8_t> output(std::cbegin(_rxBuffer), std::next(std::cbegin(_rxBuffer), bytesReceived));
 
         // emit signal
         _onReceived(output);
+
+        _linkBuffer.mutex.lock();
+        _linkBuffer.data.insert(std::end(_linkBuffer.data), std::begin(_rxBuffer), std::next(std::begin(_rxBuffer), bytesReceived));
+        _linkBuffer.mutex.unlock();
 
         // Redo next async request
         bindRead();
     }
 }
 
-void UdpLink::write(const std::vector<uint8_t>& vector)
+int UdpLink::read(uint8_t* buffer, int nBytes)
+{
+    _linkBuffer.mutex.lock();
+    const int amount = std::min(nBytes, static_cast<int>(_linkBuffer.data.size()));
+    std::copy_n(std::begin(_linkBuffer.data), amount, buffer);
+    _linkBuffer.data.erase(_linkBuffer.data.begin(), std::next(_linkBuffer.data.begin(), amount));
+    _linkBuffer.mutex.unlock();
+    return amount;
+}
+
+int UdpLink::write(const uint8_t* data, int nBytes)
 {
     _socket.async_send(
-        boost::asio::buffer(vector),
+        boost::asio::buffer(data, nBytes),
         [this](boost::system::error_code error, size_t /*bytes_transferred*/) {
             if (error) {
                 std::cerr << "Error while sending data to socket: "
@@ -83,4 +95,11 @@ void UdpLink::write(const std::vector<uint8_t>& vector)
                 std::cerr << "Error: " << error.category().name() << " " << error.message() << std::endl;
             }
         });
+
+    return nBytes;
+}
+
+void UdpLink::write(const std::vector<uint8_t>& vector)
+{
+    write(vector.data(), vector.size());
 }
