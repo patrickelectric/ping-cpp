@@ -7,9 +7,8 @@
 
 UdpLink::UdpLink(const std::string& host, const std::string& port)
     : AbstractLink()
-    , _ioContext()
-    , _runContext(true)
-    , _socket(_ioContext)
+    , _context()
+    , _socket(_context.eventLoop)
     , _rxBuffer(4096)
 {
     _endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::make_address(host),
@@ -27,17 +26,27 @@ UdpLink::UdpLink(const std::string& host, const std::string& port)
             write({ 0, 255 });
         });
 
-    _futureContent = std::async(std::launch::async, [this] {
+    _context.run = true;
+    _context.future = std::async(std::launch::async, [this] {
         // Run event loop
-        while (_runContext) {
+        while (_context.run) {
             using namespace std::chrono_literals;
             try {
-                _ioContext.run_for(100ms);
+                _context.eventLoop.run_for(100ms);
             } catch (const std::exception& exception) {
                 std::cerr << "Event loop failed to run:" << exception.what() << std::endl;
             }
         }
     });
+}
+
+UdpLink::~UdpLink()
+{
+    close();
+
+    // Ask context to finish and wait for it
+    _context.run = false;
+    _context.future.get();
 }
 
 void UdpLink::bindRead()

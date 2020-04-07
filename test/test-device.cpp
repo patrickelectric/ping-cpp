@@ -17,8 +17,8 @@ int main(int argc, char** /*argv*/) {
 
     //const char* portFileName = argv[1];
 
-    //auto port = AbstractLink::openUrl("serial:/dev/ttyUSB0:115200");
-    auto port = AbstractLink::openUrl("udp:0.0.0.0:3636");
+    auto port = AbstractLink::openUrl("serial:/dev/ttyUSB0:115200");
+    //auto port = AbstractLink::openUrl("udp:0.0.0.0:3636");
     PingDevice device = PingDevice(*port.get());
 
     printf("initializing\n");

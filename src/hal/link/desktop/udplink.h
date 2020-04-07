@@ -13,14 +13,7 @@
 class UdpLink : public AbstractLink {
 public:
     UdpLink(const std::string& host, const std::string& port);
-    ~UdpLink()
-    {
-        close();
-
-        // Ask context to finish and wait for it
-        _runContext = false;
-        _futureContent.get();
-    };
+    ~UdpLink();
 
     virtual void close() override final
     {
@@ -44,9 +37,12 @@ private:
     void bindRead();
     void doRead(boost::system::error_code error, size_t bytesReceived);
 
-    boost::asio::io_context _ioContext;
-    std::future<void> _futureContent;
-    std::atomic<bool> _runContext;
+    struct {
+        std::atomic<bool> run;
+        boost::asio::io_context eventLoop;
+        std::future<void> future;
+    } _context;
+
     boost::asio::ip::udp::socket _socket;
     boost::asio::ip::udp::endpoint _endpoint;
     std::vector<uint8_t> _rxBuffer;
