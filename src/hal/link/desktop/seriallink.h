@@ -19,7 +19,6 @@ public:
 
     virtual void close() override final { _serialPort.close(); };
     virtual bool isOpen() override final { return _serialPort.is_open(); };
-    //void write(const std::vector<uint8_t>& vector) override final;
 
     virtual int read(uint8_t* buffer, int nBytes) override final;
     virtual int write(const uint8_t* data, int nBytes) override final;
@@ -38,6 +37,7 @@ private:
     } _context;
 
     boost::asio::serial_port _serialPort;
+
     std::array<uint8_t, 4096> _rxBuffer;
 
     struct {
