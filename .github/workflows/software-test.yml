@@ -23,7 +23,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt update
-        sudo apt install gcc-10
+        sudo apt install g++
 
     - name: Cache
       uses: actions/cache@v2
@@ -37,7 +37,7 @@ jobs:
 
     - name: Install build tools
       run: |
-        pip3 install cmake conan
+        pip3 install cmake git+https://github.com/conan-io/conan
 
     - name: Build it
       run: |
