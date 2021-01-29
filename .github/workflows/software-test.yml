@@ -33,7 +33,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt update
-        sudo apt install g++
+        sudo apt install g++ gcc
 
     - name: Install build tools
       run: |
