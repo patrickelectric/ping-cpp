@@ -19,6 +19,12 @@ jobs:
       with:
         python-version: '3.8'
 
+    - name: Install linux compiler
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt update
+        sudo apt install g++ gcc
+
     - name: Cache
       uses: actions/cache@v2
       env:
@@ -28,12 +34,6 @@ jobs:
           ~/.cache/pip
           ~/.conan
         key: ${{ runner.os }}-${{ env.BUILD_TYPE }}-${{ hashFiles('CMakeLists.txt') }} }}
-
-    - name: Install linux compiler
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt update
-        sudo apt install g++ gcc
 
     - name: Install build tools
       run: |
