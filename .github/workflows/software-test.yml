@@ -23,7 +23,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt update
-        sudo apt install g++ gcc
+        sudo apt install binutils
 
     - name: Cache
       uses: actions/cache@v2
