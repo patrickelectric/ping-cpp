@@ -32,8 +32,8 @@ jobs:
     - name: Install linux compiler
       if: runner.os == 'Linux'
       run: |
-        apt update
-        apt install gcc
+        sudo apt update
+        sudo apt install gcc
 
     - name: Install build tools
       run: |
