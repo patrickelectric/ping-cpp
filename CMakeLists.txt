@@ -5,6 +5,8 @@ project(ping-cpp LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+include(cmake/Default.cmake)
+
 # Enable compile checks for msvc, clang and gcc
 if(MSVC)
   add_compile_options(/W4 /WX)
