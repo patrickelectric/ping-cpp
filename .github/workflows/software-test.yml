@@ -14,9 +14,27 @@ jobs:
 
     steps:
     - uses: actions/checkout@master
+
     - uses: actions/setup-python@v2
       with:
         python-version: '3.8'
+
+    - name: Cache
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-pip-and-conan-modules
+      with:
+        path: |
+          ~/.cache/pip
+          ~/.conan
+        key: ${{ runner.os }}-${{ env.BUILD_TYPE }}-${{ hashFiles('CMakeLists.txt') }} }}
+
+    - name: Install linux compiler
+      if: runner.os == 'Linux'
+      run: |
+        apt update
+        apt install gcc
+
     - name: Install build tools
       run: |
         pip3 install cmake conan
