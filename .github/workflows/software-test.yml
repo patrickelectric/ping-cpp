@@ -23,7 +23,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt update
-        sudo apt install binutils
+        sudo apt install gcc-10
 
     - name: Cache
       uses: actions/cache@v2
