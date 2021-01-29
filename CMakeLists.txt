@@ -6,6 +6,19 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(cmake/Default.cmake)
+include(cmake/CheckConan.cmake)
+
+conan_cmake_run(
+    REQUIRES
+        boost_asio/1.69.0@bincrafters/stable
+        boost_atomic/1.69.0@bincrafters/stable
+        boost_filesystem/1.69.0@bincrafters/stable
+        boost_program_options/1.69.0@bincrafters/stable
+        boost_system/1.69.0@bincrafters/stable
+        boost_thread/1.69.0@bincrafters/stable
+    BASIC_SETUP
+    BUILD missing
+)
 
 # Enable compile checks for msvc, clang and gcc
 if(MSVC)
