@@ -37,7 +37,7 @@ jobs:
 
     - name: Install build tools
       run: |
-        pip3 install cmake git+https://github.com/conan-io/conan
+        pip3 install cmake git+https://github.com/conan-io/conan.git@develop
 
     - name: Build it
       run: |
