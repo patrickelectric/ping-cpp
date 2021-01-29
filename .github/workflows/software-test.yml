@@ -38,11 +38,13 @@ jobs:
     - name: Install build tools
       run: |
         pip3 install cmake git+https://github.com/conan-io/conan.git@develop
+        conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan
 
     - name: Build it
       run: |
         git submodule update --init --recursive
         mkdir build
+        c++ --version
         cmake -B build -DCMAKE_BUILD_TYPE=Debug && cmake --build build --parallel --config Debug
 
     - name: Run tests
